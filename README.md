@@ -12,3 +12,7 @@ We first need to create a server in Rust to show data.
 Dynamically change the story based on the user input
 
 # 3. (Crazy) Procedurally generated story
+
+
+# 4. How to Run
+Run `cargo install` -> `cargo run src/main.rs`

@@ -1,15 +1,15 @@
 use std::io;
 use std::fs;
 
-fn main(){
-    // println!("Che parte della storia vuoi? A o B?");
+fn get_json() -> serde_json::Value{
     let story = fs::read_to_string("src/story.json").expect("Unable to read file");
-    //println!("{}", story);
-    let json: serde_json::Value =
-        serde_json::from_str(story.as_str()).expect("Couldn't Parse JSON");
+    return serde_json::from_str(story.as_str()).expect("Couldn't Parse JSON");
+}
 
-    //println!("{}", json);
+fn main(){
+    let json: serde_json::Value = get_json();
     println!("{}", json["0"]);
+    
     let mut input = String::new();
 
     io::stdin()
