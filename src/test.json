@@ -1,0 +1,23 @@
+{
+  "beginning": "testo",
+  "A": {
+    "text" : "testo a",
+    "A": {
+      "text": "A-A",
+      "A":{"text": "AAAAAAAAAAA"},
+      "B":{"text": "AAAAAAAAAAAAAABBBBBB"}
+    },
+    "B": {
+      "text": "A=B"
+    }
+  }, 
+  "B": {
+    "text" : "testo b",
+    "A": {
+      "text": "B-A"
+    },
+    "B": {
+      "text": "B-B"
+    }
+  }
+}
