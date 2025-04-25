@@ -1,5 +1,9 @@
 {
   "0": "La storia comincia qui, come vuoi continuare? A o B?",
   "1": "Ahhh, hai deciso di scegliere A... capisco, come vuoi che continui questa storia?",
-  "2": "Ahhh, sei chiarimente un temerario e hai scelto B"
+  "2": "Ahhh, sei chiarimente un temerario e hai scelto B",
+  "3": "Continuiamo con questo percorso, ti piace molto la prima scelta",
+  "4": "Sei arrivato qui perchè hai scelto A - B, ora cosa sceglierai?",
+  "5": "Dopo aver scelto B ti sei calmato un po' e hai scelto A, ti sei penito?",
+  "6": "Continui su questa strada. hai scelto B - B, ora cosa sceglierai?"
 }
