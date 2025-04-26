@@ -1,23 +1,25 @@
 {
-  "beginning": "testo",
-  "A": {
+ "node": {
+  "text": "testo",
+  "a": {
     "text" : "testo a",
-    "A": {
+    "a": {
       "text": "A-A",
-      "A":{"text": "AAAAAAAAAAA"},
-      "B":{"text": "AAAAAAAAAAAAAABBBBBB"}
+      "a":{"text": "AAAAAAAAAAA"},
+      "b":{"text": "AAAAAAAAAAAAAABBBBBB"}
     },
-    "B": {
+    "b": {
       "text": "A=B"
     }
   }, 
-  "B": {
+  "b": {
     "text" : "testo b",
-    "A": {
+    "a": {
       "text": "B-A"
     },
-    "B": {
+    "b": {
       "text": "B-B"
     }
   }
+}
 }

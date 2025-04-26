@@ -4,9 +4,7 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Deserialize)]
 struct Story {
-    beginning: String,
-    A: Node,
-    B: Node,
+    node: Option<Box<Node>>
 }
 
 
@@ -14,9 +12,9 @@ struct Story {
 struct Node {
     text: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    A: Option<Box<Node>>,
+    a: Option<Box<Node>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    B: Option<Box<Node>>,
+    b: Option<Box<Node>>,
 }
 
 fn get_json() -> Story {
@@ -32,34 +30,33 @@ fn get_user_input() -> String {
     return input;
 }
 
-fn print_node_text(node: Option<Box<Node>>){
-match node {
-    Some(node) => println!("{}", node.text),
-    None => println!("No node found"),
+fn play(node: Option<Box<Node>>) {
+    if node.is_none() {
+        println!("The end.");
+        return;
     }
+    let node = node.unwrap();
+    println!("{}", node.text);
+    println!("\nChoose an option:");
+    if node.a.is_some() {
+        println!("A: {}", node.a.as_ref().unwrap().text);
+    }
+    if node.b.is_some() {
+        println!("B: {}", node.b.as_ref().unwrap().text);
+    }
+    let input = get_user_input();
+    if input.trim().eq("A") {
+        play(node.a);
+    } else if input.trim().eq("B") {
+        play (node.b);
+    } else {
+        println!("Invalid input. Please enter A or B.");
+        play(Some(node));
+    }
+    
+    //println!("{}", node.text);
 }
 fn main(){
     let story: Story = get_json();
-
-    println!("{}", story.beginning);
-    println!("{}", story.A.text);
-    print_node_text(story.A.A);
-    print_node_text(story.A.B);
-    print_node_text(story.B.A);
-    print_node_text(story.B.B);
-    //print_node_text(story.A.A?.A);
-    //println!("{}", story.b.a.unwrap().text);
-    
-    /*let mut input = get_user_input(); 
-    match_user_input(&input, &json, "1", "2");
-    //println!("{} A? {} - B? {}", input.trim(), input.trim().eq("A"), input.trim().eq("B"));
-    
-    if input.trim().eq("A"){
-        input = get_user_input();
-        match_user_input(&input, &json, "3", "4");
-
-    } else if input.trim().eq("B") {
-        input = get_user_input();
-        match_user_input(&input, &json, "5", "6");
-    }*/
+    play(story.node);
 }
