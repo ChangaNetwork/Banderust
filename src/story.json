@@ -1,5 +1,4 @@
 {
-  "node": {
     "text": "You wake up in a mysterious forest. Two paths lie ahead.",
     "a": {
       "text": "You follow the sunny path.",
@@ -169,5 +168,4 @@
         }
       }
     }
-  }
 }

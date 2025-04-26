@@ -3,12 +3,6 @@ use std::fs;
 use serde::{Serialize, Deserialize};
 
 static STORY_PATH: &str = "src/story.json";
-#[derive(Debug, Deserialize)]
-struct Story {
-    node: Option<Box<Node>>
-}
-
-
 #[derive(Debug, Serialize, Deserialize)]
 struct Node {
     text: String,
@@ -18,7 +12,7 @@ struct Node {
     b: Option<Box<Node>>,
 }
 
-fn get_json() -> Story {
+fn get_json() -> Option<Box<Node>> {
     let story = fs::read_to_string(STORY_PATH).expect("Unable to read file");
     return serde_json::from_str(story.as_str()).expect("Couldn't Parse JSON");
 }
@@ -62,6 +56,6 @@ fn play(node: Option<Box<Node>>) {
     //println!("{}", node.text);
 }
 fn main(){
-    let story: Story = get_json();
-    play(story.node);
+    let story: Option<Box<Node>> = get_json();
+    play(story);
 }
