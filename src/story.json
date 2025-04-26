@@ -1,13 +1,173 @@
 {
-  "0": "La storia comincia qui, come vuoi continuare? A o B?",
-  "1": {
-    "text": "Ahhh, hai deciso di scegliere A... capisco, come vuoi che continui questa storia?",
-    "1": {"text" : "Continuiamo con questo percorso, ti piace molto la prima scelta" },
-    "2": {"text" : "Sei arrivato qui perchè hai scelto A - B, ora cosa sceglierai?"}
+  "node": {
+    "text": "You wake up in a mysterious forest. Two paths lie ahead.",
+    "a": {
+      "text": "You follow the sunny path.",
+      "a": {
+        "text": "You encounter a river.",
+        "a": {
+          "text": "You find a boat by the river.",
+          "a": {
+            "text": "You sail to a distant island.",
+            "a": {
+              "text": "On the island, a castle looms ahead.",
+              "a": {
+                "text": "You enter the castle's main hall.",
+                "a": {
+                  "text": "A wizard offers you a quest.",
+                  "a": {
+                    "text": "You journey to the mountain.",
+                    "a": {
+                      "text": "At the mountain peak, you find a portal."
+                    },
+                    "b": {
+                      "text": "You are attacked by mountain beasts."
+                    }
+                  },
+                  "b": {
+                    "text": "You refuse and are teleported home.",
+                    "a": {
+                      "text": "You start a new peaceful life."
+                    },
+                    "b": {
+                      "text": "You regret refusing the quest."
+                    }
+                  }
+                },
+                "b": {
+                  "text": "You wander into the castle dungeon.",
+                  "a": {
+                    "text": "You find a hidden treasure room."
+                  },
+                  "b": {
+                    "text": "You get lost in the dark corridors."
+                  }
+                }
+              },
+              "b": {
+                "text": "You camp outside and are ambushed by bandits.",
+                "a": {
+                  "text": "You successfully defend yourself."
+                },
+                "b": {
+                  "text": "You are captured and imprisoned."
+                }
+              }
+            },
+            "b": {
+              "text": "The boat leaks and you swim back to shore.",
+              "a": {
+                "text": "You find a friendly trader."
+              },
+              "b": {
+                "text": "You are lost in the wilderness."
+              }
+            }
+          },
+          "b": {
+            "text": "You build a raft from logs.",
+            "a": {
+              "text": "The raft carries you safely downstream."
+            },
+            "b": {
+              "text": "The raft breaks and you must swim."
+            }
+          }
+        },
+        "b": {
+          "text": "You cross a bridge and meet a trader.",
+          "a": {
+            "text": "The trader offers you supplies."
+          },
+          "b": {
+            "text": "The trader tricks you and steals your belongings."
+          }
+        }
+      },
+      "b": {
+        "text": "You relax by the riverbank and fall asleep.",
+        "a": {
+          "text": "You wake up to a rising flood."
+        },
+        "b": {
+          "text": "You wake up feeling refreshed."
+        }
+      }
     },
-  "2": {
-    "text": "Ahhh, sei chiarimente un temerario e hai scelto B",
-    "1": {"text" : "Dopo aver scelto B ti sei calmato un po' e hai scelto A, ti sei penito?" },
-    "2": {"text" : "Continui su questa strada. hai scelto B - B, ora cosa sceglierai?"}
+    "b": {
+      "text": "You follow the dark path.",
+      "a": {
+        "text": "You find a glowing cave.",
+        "a": {
+          "text": "You explore the cave tunnels.",
+          "a": {
+            "text": "You find ancient ruins inside.",
+            "a": {
+              "text": "An old spirit gives you a riddle.",
+              "a": {
+                "text": "You solve the riddle and gain a treasure.",
+                "a": {
+                  "text": "You return home wealthy.",
+                  "a": {
+                    "text": "You start a new life as a hero.",
+                    "a": {
+                      "text": "You train young adventurers."
+                    },
+                    "b": {
+                      "text": "You retire peacefully."
+                    }
+                  },
+                  "b": {
+                    "text": "You lose the treasure during your journey."
+                  }
+                },
+                "b": {
+                  "text": "You fail the riddle and are cursed."
+                }
+              },
+              "b": {
+                "text": "You ignore the spirit and leave."
+              }
+            },
+            "b": {
+              "text": "You get lost in endless tunnels.",
+              "a": {
+                "text": "You eventually find an exit."
+              },
+              "b": {
+                "text": "You fall into a hidden pit."
+              }
+            }
+          },
+          "b": {
+            "text": "You find crystals and get trapped inside.",
+            "a": {
+              "text": "You dig your way out."
+            },
+            "b": {
+              "text": "You are rescued by dwarves."
+            }
+          }
+        },
+        "b": {
+          "text": "You avoid the cave and climb a hill.",
+          "a": {
+            "text": "You spot a village from the hilltop."
+          },
+          "b": {
+            "text": "You encounter a wild beast."
+          }
+        }
+      },
+      "b": {
+        "text": "You stumble and fall into a ravine.",
+        "a": {
+          "text": "You find a secret passage underground."
+        },
+        "b": {
+          "text": "You are rescued by wanderers."
+        }
+      }
+    }
   }
 }
