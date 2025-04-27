@@ -1,5 +1,4 @@
 {
- "node": {
   "text": "testo",
   "a": {
     "text" : "testo a",
@@ -21,5 +20,4 @@
       "text": "B-B"
     }
   }
-}
 }
