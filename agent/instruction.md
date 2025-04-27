@@ -4,9 +4,13 @@
 From the root of the project: `cd agent`
 1. Create virtual environment
 `python -m venv .venv`
-2. Activate environment 
+3. Activate environment 
 `source .venv/bin/activate`
-3. Launch adk 
+4. Install libraries
+`pip install google-adk litellm`
+5. Optional declare variables
+`export OLLAMA_API_BASE="http://localhost:11434/"`
+4. Launch adk 
 `adk web`
 
 ## Optional
