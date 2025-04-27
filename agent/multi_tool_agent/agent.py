@@ -72,7 +72,7 @@ def generate_story(keywords: str, max_attempts: int = 3) -> Dict[str, Any]:
 
 def validate_structure(node: Dict[str, Any]) -> bool:
     """
-    Recursively validates the story structure.
+    Recursively validates the story structure. 
     """
     if "text" not in node:
         return False
