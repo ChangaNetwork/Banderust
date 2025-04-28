@@ -17,5 +17,5 @@ target/
 #.idea/
 src/main
 agent/multi_tool_agent/__pycache__
-
+agent/output/
 agent/multi_tool_agent/.env
