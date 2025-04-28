@@ -10,7 +10,7 @@ from google.genai import types
 from google.adk.models import LlmResponse
 
 litellm._turn_on_debug()
-AGENT="ollama_chat/gemma3:4b"
+AGENT="ollama_chat/llama3.1"
 
 def generate_story(keywords: str, max_attempts: int = 3) -> Dict[str, Any]:
     print(f"generate story with {keywords}")
@@ -111,7 +111,7 @@ def save_model_response(callback_context: CallbackContext, llm_response: LlmResp
 
     try:
         if llm_response and llm_response.content and llm_response.content.parts and llm_response.content.parts[0].text:
-            response_text = llm_response.content.parts[0].text
+            response_text = llm_response.content.parts[0].text.replace('```json', '').replace('```', '').strip()
             print(f"testo della risposta: {response_text}")
 
             try:
