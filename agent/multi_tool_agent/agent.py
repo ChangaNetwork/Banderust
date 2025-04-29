@@ -78,35 +78,7 @@ Bad examples:
     output_key="choices"
 )
 
-step3 = Agent(
-    model=LiteLlm(
-        model=AGENT,
-        temperature=1.0,
-    ),
-    name="better_choice",
-    description=(
-        "You will modify the text in the state key 'choices'"
-    ),
-    instruction="""Generate TWO in-game choices (alternatives to 'go left') that:
-0. Are processed from the state key 'story_text'
-1. Are distinct and mutually exclusive (no overlap)
-2. Start with STRONG VERBS (clear actions)
-3. Use 1 CONCRETE OBJECT + 1 EVOCATIVE DETAIL per choice
-4. MIN 20 words total (combined)
-5. MAX 100 words total (combined)
-6. Format strictly as: "A= [Choice 1]
-B= [Choice 2]"
-7. NO "you", NO "OR", NO explanations
-
-Bad examples:
-- "A. The path looks dark and B. You see a key" (no action, uses "you")
-- "A. Run or B. Hide" (uses "OR", lacks detail)
-""",
-    tools=[],
-    before_model_callback=merge_text,
-    output_key="improved_choices"
-)
-root_agent = SequentialAgent(name="Pipe", sub_agents=[step1, step2, step3])
+root_agent = SequentialAgent(name="Pipe", sub_agents=[step1, step2])
 #root_agent = Agent(
 #    name="coordinator",
 #    model=LiteLlm(model=AGENT),
