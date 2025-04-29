@@ -1,7 +1,46 @@
 from typing import  Optional
 from google.adk.agents.callback_context import CallbackContext
 from google.genai import types
-from google.adk.models import LlmResponse
+from google.adk.models import LlmResponse, LlmRequest
+
+def modify_output(
+    callback_context: CallbackContext, llm_response: LlmResponse
+) -> Optional[LlmResponse]:
+    print(f"[modify_output] received: {llm_response.content}")
+    print(f"[modify_output] received: {llm_response.content.parts[0].text}")
+    return None
+
+def merge_text(
+    callback_context: CallbackContext, llm_request: LlmRequest
+) -> Optional[LlmResponse]:
+    """Merges multiple texts if present in content"""
+    agent_name = callback_context.agent_name
+    print(f"[Callback] Before model call for agent: {agent_name}")
+    print(f"[Callback] Inspecting contents: '{llm_request.contents}'")
+
+    if not llm_request.contents:
+        return None 
+    # Extract all text parts from all Content objects
+    all_text_parts = []
+    for content in llm_request.contents:
+        for part in content.parts:
+            if part.text:  # Only include parts with text
+                all_text_parts.append(part.text)
+    
+    # If no text was found, return original request
+    if not all_text_parts:
+        return None
+
+    merged_text = "\n".join(all_text_parts)
+    print(f"Merged text: {merged_text}")
+    llm_request.contents = [
+        types.Content(
+            parts=[types.Part(text=merged_text)],
+            role="user"
+        )
+    ]
+    
+    return None 
 
 def save_model_response(
     callback_context: CallbackContext, llm_response: LlmResponse

@@ -10,12 +10,73 @@ from google.adk.runners import Runner
 from google.genai import types
 from google.adk.models import LlmResponse, LlmRequest
 from google.adk.artifacts import InMemoryArtifactService
-from multi_tool_agent.utils import save_model_response
+from multi_tool_agent.utils import save_model_response, modify_output
 
 import litellm
 litellm._turn_on_debug()
 
 AGENT = "ollama_chat/gemma3:1b"
+
+def simple_before_model_modifier(
+    callback_context: CallbackContext, llm_request: LlmRequest
+) -> Optional[LlmResponse]:
+    """Inspects/modifies the LLM request or skips the call."""
+    agent_name = callback_context.agent_name
+    print(f"[Callback] Before model call for agent: {agent_name}")
+    print(f"[Callback] Inspecting contents: '{llm_request.contents}'")
+
+    if not llm_request.contents:
+        return None 
+    # Extract all text parts from all Content objects
+    all_text_parts = []
+    for content in llm_request.contents:
+        for part in content.parts:
+            if part.text:  # Only include parts with text
+                all_text_parts.append(part.text)
+    
+    # If no text was found, return original request
+    if not all_text_parts:
+        return None
+
+    merged_text = "\n".join(all_text_parts)
+    print(f"merged text: {merged_text}")
+    llm_request.contents = [
+        types.Content(
+            parts=[types.Part(text=merged_text)],
+            role="user"  # or "assistant" if needed
+        )
+    ]
+    
+    return None 
+
+
+def check_if_agent_should_run(callback_context: CallbackContext) -> Optional[types.Content]:
+    """
+    Logs entry and checks 'skip_llm_agent' in session state.
+    If True, returns Content to skip the agent's execution.
+    If False or not present, returns None to allow execution.
+    """
+    agent_name = callback_context.agent_name
+    invocation_id = callback_context.invocation_id
+    current_state = callback_context.state.to_dict()
+
+    print(f"\n[Callback] Entering agent: {agent_name} (Inv: {invocation_id})")
+    print(f"[Callback] Current State: {current_state}")
+    
+    return None
+
+def combine_outputs_after_agent(callback_context: CallbackContext) -> Optional[types.Content]:
+    """
+    Callback function to combine multiple array outputs into a single string
+    after each agent completes its execution.
+    """
+    # Get the current state and outputs
+    
+    # You can also add logging if needed
+    print(f"[CombineOutputs] After agent {callback_context.agent_name}")
+    print(f"Full state: {callback_context.state.to_dict()}")
+    print(f"User content {callback_context.user_content}")
+    return None
 
 # --- Definizione dell'Agente con Temperatura ---
 step1 = Agent(
@@ -49,7 +110,8 @@ Format:
 """,
     output_key="story_text",
     tools=[],
-    after_model_callback=save_model_response,
+    after_model_callback=modify_output,
+    after_agent_callback=combine_outputs_after_agent,
 )
 
 step2 = Agent(
@@ -78,7 +140,10 @@ Bad examples:
 - "A. Run or B. Hide" (uses "OR", lacks detail)
 """,
     tools=[],
-    after_model_callback=save_model_response,
+    before_agent_callback=check_if_agent_should_run,
+    before_model_callback=simple_before_model_modifier,
+    #after_model_callback=save_model_response,
+
 )
 root_agent = SequentialAgent(name="Pipe", sub_agents=[step1, step2])
 
