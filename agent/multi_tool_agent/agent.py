@@ -1,7 +1,7 @@
 from google.adk.agents import SequentialAgent, Agent
 from google.adk.models.lite_llm import LiteLlm
 from typing import Optional
-from multi_tool_agent.utils import merge_text, save_model_response
+from multi_tool_agent.utils import merge_text, save_json_response
 from google.adk.models import LlmResponse
 from google.adk.agents.callback_context import CallbackContext
 
@@ -44,108 +44,61 @@ Format:
 """,
     output_key="story_text",
     tools=[],
-    #after_model_callback=save_model_response,
 )
-
 
 step2 = Agent(
     model=LiteLlm(
         model=AGENT,
         temperature=1.0,
     ),
-    name="choice_agent",
+    name="choice_a_agent",
     description=(
-        "Generates two distinct, action-packed choices for a text-based adventure game, from the state key 'story_text' "
-        "presented in the format 'A=... in a newline B=...'. Each choice must be a clear, playable action "
-        "with vivid details. Example: 'A. Open the whispering door and B. Drink the bubbling vial'"
+        "Generate one in game choice starting from state key 'story_text' "
     ),
-    instruction="""Generate TWO in-game choices (alternatives to 'go left') that:
-0. Are processed from the state key 'story_text'
-1. Are distinct and mutually exclusive (no overlap)
+    instruction="""Generate ONE in-game choice only ONE sentence, you will generate the A choice that:
+0. Is processed from the state key 'story_text'
 2. Start with STRONG VERBS (clear actions)
 3. Use 1 CONCRETE OBJECT + 1 EVOCATIVE DETAIL per choice
-4. MIN 20 words total (combined)
-5. MAX 100 words total (combined)
-6. Format strictly as: "A= [Choice 1] newline B= [Choice 2]"
+4. MIN 10 words total 
+5. MAX 50 words total
+6. Answer should be JUST the sentence
 7. NO "you", NO "OR", NO explanations
 
 Bad examples:
-- "A. The path looks dark and B. You see a key" (no action, uses "you")
-- "A. Run or B. Hide" (uses "OR", lacks detail)
+- "A. You see a key or you follow a path" (no action, uses "you", no action uses "or")
+- "A. Run (lacks detail)
 """,
     tools=[],
+    output_key="choice_a",
     before_model_callback=merge_text,
-    output_key="choices"
 )
+step3 = Agent(
+    model=LiteLlm(
+        model=AGENT,
+        temperature=1.0,
+    ),
+    name="choice_b_agent",
+    description=(
+        "Generate one in game choice starting from state key 'story_text' and 'choice_a' "
+    ),
+    instruction="""Generate ONE in-game choice, only ONE sentence, you will generate the B choice that:
+0. Is processed from the state key 'story_text' and is different from state key 'choice_a'
+1. Is distinct and mutually exclusive from state_key 'choice_a'(no overlap)
+2. Start with STRONG VERBS (clear actions)
+3. Use 1 CONCRETE OBJECT + 1 EVOCATIVE DETAIL per choice
+4. MIN 10 words total 
+5. MAX 50 words total
+6. Answer should be JUST the sentence
+7. NO "you", NO "OR", NO explanations
 
-root_agent = SequentialAgent(name="Pipe", sub_agents=[step1, step2])
-#root_agent = Agent(
-#    name="coordinator",
-#    model=LiteLlm(model=AGENT),
-#    description="You combine the output from the story agents",
-#    sub_agents=[setting_agent, choice_agent],
-#    after_model_callback=coordinator_callback
-#)
+Bad examples:
+- "B. You see a key" (no action, uses "you")
+- "B. Hide" (lacks detail)
+""",
+    tools=[],
+    output_key="choice_b",
+    before_model_callback=merge_text,
+    after_agent_callback=save_json_response,
 
-
-
-def generate_choice(keywords: str, max_attempts: int = 3) -> Optional[str]:
-    """
-    Generates a text choice based on keywords using root_agent.
-    Retries in case of error or empty answer up to max_attempts times.
-
-    Args:
- keywords: Context or keywords for the choice (e.g., "the sword is broken serves water")
- max_attempts: Maximum number of retries.
-
-    Returns:
- String containing the generated choice, or None if it fails.
-
-    Raises:
- ValueError: If max_attempts is reached without a valid answer.
-    """
-    print(f"generate_choice with keywords: {keywords}")
-
-    prompt_input = f"Context: {keywords}. Generate a choice."
-
-    for attempt in range(max_attempts):
-        print(f"Attempt {attempt + 1}/{max_attempts}...")
-        try:
-            # Chiama l'agente con l'input specifico
-            response = root_agent.run(prompt_input)
-
-            # Estrai il testo dalla risposta
-            if (
-                response
-                and response.content
-                and response.content.parts
-                and response.content.parts[0].text
-            ):
-                choice_text = response.content.parts[0].text.strip()
-                # Rimuovi eventuali artefatti markdown residui (anche se il prompt lo vieta)
-                choice_text = choice_text.replace("```", "").strip()
-
-                if choice_text: # Assicurati che la risposta non sia vuota
-                    print(f"Generated choice: {choice_text}")
-                    return choice_text
-                else:
-                    print("Attempt failed: Received empty response.")
-
-            else:
-                print("Attempt failed: Invalid response structure.")
-
-        except Exception as e:
-            print(f"Attempt {attempt + 1} failed with error: {str(e)}")
-            if attempt == max_attempts - 1:
-                raise ValueError(
-                    f"Impossibile generare una scelta valida dopo {max_attempts} tentativi per keywords: '{keywords}'"
-                )
-        # Attendi un istante prima di riprovare (opzionale)
-        # import time
-        # time.sleep(1)
-
-    # Se esce dal ciclo senza successo
-    raise ValueError(
-        f"Impossibile generare una scelta valida dopo {max_attempts} tentativi per keywords: '{keywords}'"
-    )
-
+)
+root_agent = SequentialAgent(name="Pipe", sub_agents=[step1, step2, step3])

@@ -2,13 +2,7 @@ from typing import  Optional
 from google.adk.agents.callback_context import CallbackContext
 from google.genai import types
 from google.adk.models import LlmResponse, LlmRequest
-
-def modify_output(
-    callback_context: CallbackContext, llm_response: LlmResponse
-) -> Optional[LlmResponse]:
-    print(f"[modify_output] received: {llm_response.content}")
-    print(f"[modify_output] received: {llm_response.content.parts[0].text}")
-    return None
+import json
 
 def merge_text(
     callback_context: CallbackContext, llm_request: LlmRequest
@@ -42,6 +36,24 @@ def merge_text(
     
     return None 
 
+def save_json_response(callback_context: CallbackContext) -> Optional[types.Content]:
+    current_state = callback_context.state
+    #print(f"[save json response]: \nSTORY: {current_state.get("story_text")}\nCHOICES: {current_state.get("choices")}")
+
+
+    #print("A Part:", current_state.get("choice_a"))
+    #print("B Part:", current_state.get("choice_b"))
+    #print("Story text:", current_state.get("story_text").split("*\n\n")[1])
+    data = {}
+    data['text'] = current_state.get("story_text")
+    data['a'] = current_state.get("choice_a")
+    data['b'] = current_state.get("choice_b")
+    #json_data = json.dumps(data)
+    filename = f"story_{callback_context.invocation_id}.json"  # Cambiato estensione
+
+    with open(f"output/{filename}", "w", encoding="utf-8") as file:
+        json.dump(data, file)
+    return None
 def save_model_response(
     callback_context: CallbackContext, llm_response: LlmResponse
 ) -> Optional[LlmResponse]:
