@@ -1,41 +1,90 @@
-from google.adk.agents import Agent
+from google.adk.agents import SequentialAgent, Agent
 from google.adk.models.lite_llm import LiteLlm
 from typing import Optional
 from multi_tool_agent.utils import save_model_response
+from google.adk.models import LlmResponse
+from google.adk.agents.callback_context import CallbackContext
 
-# litellm._turn_on_debug()
+
+
+import litellm
+litellm._turn_on_debug()
 
 AGENT = "ollama_chat/gemma3:1b"
 
-
 # --- Definizione dell'Agente con Temperatura ---
-root_agent = Agent(
+step1 = Agent(
+    model=LiteLlm(
+        model=AGENT,
+        temperature=0.8,  # Slightly lower for coherence, but keeps creativity
+    ),
+    name="setting_agent",
+    description=(
+        "Generates a short, atmospheric setting for a text-based adventure game "
+        "based on input keywords/themes. Output sets the stage for actionable choices "
+        "(e.g., 'choice_agent'). Focus on sensory details and looming stakes."
+    ),
+    instruction="""Generate a 3-5 sentence setting for a textual adventure game that:
+1. **Embeds the keywords/themes** (if provided) naturally into the world.
+2. **Hints at immediate dangers or mysteries** (e.g., eerie sounds, crumbling structures).
+3. **Uses vivid sensory details** (sight, sound, smell) to ground the player.
+4. OUTPUT MUST BE ONLY THE SETTING, nothing more or nothing less. don't add anything else to it.
+5. **AVOID**: 
+   - Long exposition; keep it concise. 
+   - Direct instructions (e.g., "You must...").
+   - Resolving the tension (leave it open for choices).
+
+Example (keywords: "forest, curse, moonlight"):
+*"The ancient oaks twist into skeletal shapes under the sickly green moonlight. A chorus of whispers slithers through the leaves—words in a language you almost recognize. The path ahead splits: one side littered with animal skulls, the other glowing with faint blue fungi. Something hungry watches from the shadows."*
+
+Format:
+- Strictly 3-5 sentences.
+- No bullet points/list formatting.
+- Just the setting response
+""",
+    output_key="story_text",
+    tools=[],
+    after_model_callback=save_model_response,
+)
+
+step2 = Agent(
     model=LiteLlm(
         model=AGENT,
         temperature=1.0,
-        ),
-    name="story_agent",
-    description=( # Descrizione aggiornata per chiarezza
-         "Generates ONE short, action-packed textual adventure game choice, "
- "alternative to 'go left.' Focuses on a clear action with vivid detail. "
- "Example: 'Open the whispering door' or 'Drink the bubbling vial'"
     ),
-    instruction="""Generate ONE in-game choice (alternative to 'go left') that:
-1. Builds on past choices implied by the input keywords (if any)
-2. Starts with a STRONG VERB and is a clear ACTION
-3. Uses 1 CONCRETE OBJECT + 1 EVOCATIVE DETAIL
-4. MIN 20 words
-5. MAX 100 words
-6. NO "you", NO "OR", NO explanations 
+    name="choice_agent",
+    description=(
+        "Generates two distinct, action-packed choices for a text-based adventure game, from the state key 'story_text' "
+        "presented in the format 'A=... in a newline B=...'. Each choice must be a clear, playable action "
+        "with vivid details. Example: 'A. Open the whispering door and B. Drink the bubbling vial'"
+    ),
+    instruction="""Generate TWO in-game choices (alternatives to 'go left') that:
+0. Are processed from the state key 'story_text'
+1. Are distinct and mutually exclusive (no overlap)
+2. Start with STRONG VERBS (clear actions)
+3. Use 1 CONCRETE OBJECT + 1 EVOCATIVE DETAIL per choice
+4. MIN 20 words total (combined)
+5. MAX 100 words total (combined)
+6. Format strictly as: "A= [Choice 1] newline B= [Choice 2]"
+7. NO "you", NO "OR", NO explanations
 
 Bad examples:
-- "The path looks dark" (no action)
-- "You see a key" (uses "you")
-- "Memories linger here" (not playable)
+- "A. The path looks dark and B. You see a key" (no action, uses "you")
+- "A. Run or B. Hide" (uses "OR", lacks detail)
 """,
     tools=[],
     after_model_callback=save_model_response,
 )
+root_agent = SequentialAgent(name="Pipe", sub_agents=[step1, step2])
+#root_agent = Agent(
+#    name="coordinator",
+#    model=LiteLlm(model=AGENT),
+#    description="You combine the output from the story agents",
+#    sub_agents=[setting_agent, choice_agent],
+#    after_model_callback=coordinator_callback
+#)
+
+
 
 def generate_choice(keywords: str, max_attempts: int = 3) -> Optional[str]:
     """
