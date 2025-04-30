@@ -7,10 +7,10 @@ from google.adk.agents.callback_context import CallbackContext
 
 
 
-import litellm
-litellm._turn_on_debug()
+#import litellm
+#litellm._turn_on_debug()
 
-AGENT = "ollama_chat/gemma3:1b"
+AGENT = "ollama_chat/qwen3:1.7b"
 
 # --- Definizione dell'Agente con Temperatura ---
 step1 = Agent(
@@ -22,9 +22,10 @@ step1 = Agent(
     description=(
         "Generates a short, atmospheric setting for a text-based adventure game "
         "based on input keywords/themes. Output sets the stage for actionable choices "
-        "(e.g., 'choice_agent'). Focus on sensory details and looming stakes."
+        "(e.g., 'choice_agent'). Focus on sensory details and looming stakes. /nothink"
     ),
     instruction="""Generate a 3-5 sentence setting for a textual adventure game that:
+0. /nothink
 1. **Embeds the keywords/themes** (if provided) naturally into the world.
 2. **Hints at immediate dangers or mysteries** (e.g., eerie sounds, crumbling structures).
 3. **Uses vivid sensory details** (sight, sound, smell) to ground the player.
@@ -56,7 +57,8 @@ step2 = Agent(
         "Generate one in game choice starting from state key 'story_text' "
     ),
     instruction="""Generate ONE in-game choice only ONE sentence, you will generate the A choice that:
-0. Is processed from the state key 'story_text'
+0. /nothink
+1. Is processed from the state key 'story_text'
 2. Start with STRONG VERBS (clear actions)
 3. Use 1 CONCRETE OBJECT + 1 EVOCATIVE DETAIL per choice
 4. MIN 10 words total 
@@ -82,14 +84,15 @@ step3 = Agent(
         "Generate one in game choice starting from state key 'story_text' and 'choice_a' "
     ),
     instruction="""Generate ONE in-game choice, only ONE sentence, you will generate the B choice that:
-0. Is processed from the state key 'story_text' and is different from state key 'choice_a'
-1. Is distinct and mutually exclusive from state_key 'choice_a'(no overlap)
-2. Start with STRONG VERBS (clear actions)
-3. Use 1 CONCRETE OBJECT + 1 EVOCATIVE DETAIL per choice
-4. MIN 10 words total 
-5. MAX 50 words total
-6. Answer should be JUST the sentence
-7. NO "you", NO "OR", NO explanations
+0. /nothink
+1. Is processed from the state key 'story_text' and is different from state key 'choice_a'
+2. Is distinct and mutually exclusive from state_key 'choice_a'(no overlap)
+3. Start with STRONG VERBS (clear actions)
+4. Use 1 CONCRETE OBJECT + 1 EVOCATIVE DETAIL per choice
+5. MIN 10 words total 
+6. MAX 50 words total
+7. Answer should be JUST the sentence
+8. NO "you", NO "OR", NO explanations
 
 Bad examples:
 - "B. You see a key" (no action, uses "you")

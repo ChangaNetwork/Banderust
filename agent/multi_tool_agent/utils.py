@@ -39,8 +39,6 @@ def merge_text(
 def save_json_response(callback_context: CallbackContext) -> Optional[types.Content]:
     current_state = callback_context.state
     #print(f"[save json response]: \nSTORY: {current_state.get("story_text")}\nCHOICES: {current_state.get("choices")}")
-
-
     #print("A Part:", current_state.get("choice_a"))
     #print("B Part:", current_state.get("choice_b"))
     #print("Story text:", current_state.get("story_text").split("*\n\n")[1])
