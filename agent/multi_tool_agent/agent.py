@@ -20,7 +20,7 @@ step1 = Agent(
     description=(
         "Generates a short, atmospheric setting for a text-based adventure game "
         "based on input keywords/themes. Output sets the stage for actionable choices "
-        "(e.g., 'choice_agent'). Focus on sensory details and looming stakes."
+        "(e.g., 'choice_agent'). Focus on sensory details and looming stakes. /nothink"
     ),
     instruction=f"""
     /nothink
