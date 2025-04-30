@@ -5,13 +5,11 @@ from multi_tool_agent.utils import merge_text, save_json_response
 from google.adk.models import LlmResponse
 from google.adk.agents.callback_context import CallbackContext
 
-
-
-import litellm
-litellm._turn_on_debug()
+# import litellm
+# litellm._turn_on_debug()
 
 AGENT = "ollama_chat/gemma3:1b"
-
+LANGUAGE = "italian"
 # --- Definizione dell'Agente con Temperatura ---
 step1 = Agent(
     model=LiteLlm(
@@ -24,7 +22,10 @@ step1 = Agent(
         "based on input keywords/themes. Output sets the stage for actionable choices "
         "(e.g., 'choice_agent'). Focus on sensory details and looming stakes."
     ),
-    instruction="""Generate a 3-5 sentence setting for a textual adventure game that:
+    instruction=f"""
+    /nothink
+    output in {LANGUAGE}
+    Generate a 3-5 sentence setting for a textual adventure game that:
 1. **Embeds the keywords/themes** (if provided) naturally into the world.
 2. **Hints at immediate dangers or mysteries** (e.g., eerie sounds, crumbling structures).
 3. **Uses vivid sensory details** (sight, sound, smell) to ground the player.
@@ -42,6 +43,7 @@ Format:
 - No bullet points/list formatting.
 - Just the setting response
 """,
+    before_model_callback=merge_text,
     output_key="story_text",
     tools=[],
 )
@@ -55,8 +57,11 @@ step2 = Agent(
     description=(
         "Generate one in game choice starting from state key 'story_text' "
     ),
-    instruction="""Generate ONE in-game choice only ONE sentence, you will generate the A choice that:
-0. Is processed from the state key 'story_text'
+    instruction=f"""
+    /nothink
+    output in {LANGUAGE}
+    Generate ONE in-game choice only ONE sentence, you will generate the A choice that:
+1. Is processed from the state key 'story_text'
 2. Start with STRONG VERBS (clear actions)
 3. Use 1 CONCRETE OBJECT + 1 EVOCATIVE DETAIL per choice
 4. MIN 10 words total 
@@ -81,7 +86,10 @@ step3 = Agent(
     description=(
         "Generate one in game choice starting from state key 'story_text' and 'choice_a' "
     ),
-    instruction="""Generate ONE in-game choice, only ONE sentence, you will generate the B choice that:
+    instruction=f"""
+    /nothink
+    output in {LANGUAGE}
+    Generate ONE in-game choice, only ONE sentence, you will generate the B choice that:
 0. Is processed from the state key 'story_text' and is different from state key 'choice_a'
 1. Is distinct and mutually exclusive from state_key 'choice_a'(no overlap)
 2. Start with STRONG VERBS (clear actions)
