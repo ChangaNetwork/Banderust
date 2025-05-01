@@ -1,3 +1,4 @@
+use std::fmt;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -38,6 +39,16 @@ pub enum Parts {
         end_offset: String,
     },
 }
+
+impl fmt::Display for Parts {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+      match self {
+          Parts::Text { text } => write!(f, "{}", text),
+          _ => write!(f, ""),
+      }
+  }
+}
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum CodeLanguage {
@@ -335,7 +346,8 @@ pub struct Actions {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentResponse {
     pub content: NewMessage,
-    pub grounding_metadata: GroundingMetadata,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub grounding_metadata: Option<GroundingMetadata>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub partial: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -361,7 +373,7 @@ pub struct AgentResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub timestamp: Option<i64>,
+    pub timestamp: Option<f64>,
 }
 
 pub type AgentResponses = Vec<AgentResponse>;

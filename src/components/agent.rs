@@ -13,6 +13,7 @@ use crate::abstractions::agent::{RunAgentBody, AgentResponses, Parts, NewMessage
 pub fn SendRequest(props: &SessionProp) -> Html {
     let session: CreateSessionResponse = props.session.clone();
     let request_text = use_state(|| String::new());
+    let request_response = use_state(|| Vec::new());
     let oninput = Callback::from({
         let value = request_text.clone();
         move |input_event: InputEvent| {
@@ -28,8 +29,11 @@ pub fn SendRequest(props: &SessionProp) -> Html {
     let onclick = {
             let session = session.clone();
             let request_text = request_text.clone();
+            let request_response = request_response.clone();
+
     
             move |_| {
+                let request_response = request_response.clone();
                 let body = RunAgentBody {
                     app_name: session.app_name.clone(),
                     user_id: session.user_id.clone(),
@@ -54,17 +58,46 @@ pub fn SendRequest(props: &SessionProp) -> Html {
                         .await
                     {
                         Ok(response) => {
+                            // First check if the response status is OK
                             if response.ok() {
-                                info!("Agent request sent successfully");
+                                // Get the response body as text
+                                match response.text().await {
+                                    Ok(body_text) => {
+                                        info!("Response body: {}", body_text);
+                                        
+                                        match serde_json::from_str::<AgentResponses>(&body_text) {
+                                            Ok(responses) => {
+                                                let mut sum_response: Vec<String> = Vec::new();
+                                                info!("Parsed {} agent responses", responses.len());
+                                                for response in responses {
+                                                    for part in response.content.parts {
+                                                        match part {
+                                                            Parts::Text { text } => {
+                                                                info!("{}", text);
+                                                                sum_response.push(text);
+                                                            }
+                                                            _ => {
+                                                                info!("no match");
+                                                            }
+                                                        }                                                  }
+                                                }
+                                                request_response.set(sum_response);
+                                            },
+                                            
+                                            Err(e) => error!("Failed to parse JSON: {}", e),
+                                        }
+                                    },
+                                    Err(e) => error!("Failed to read response body: {}", e),
+                                }
                             } else {
-                                error!("Failed to send request: {}", response.status());
+                                error!("Request failed with status: {}", response.status());
                             }
                         }
                         Err(err) => {
                             error!("Request error: {:?}", err);
                         }
                     }
-                });
+                }); 
             }
         };
 
@@ -73,6 +106,8 @@ pub fn SendRequest(props: &SessionProp) -> Html {
         <input type="text" {oninput}/>
         <button {onclick}>{"Agent"}</button>
         <p>{"request text: "}<h5>{&*request_text}</h5></p>
+        <h3>{ if request_response.len() > 0 {"Story:"} else {""}} </h3>
+        { for request_response.iter().map(|item| html! { <p>{item}</p> }) }
         </>
     }
 

@@ -14,13 +14,17 @@ pub struct SessionProp {
 #[function_component]
 pub fn SessionInformation(props: &SessionProp) -> Html {
     let session: CreateSessionResponse = props.session.clone();
-    html! {
-        <>
-        <h2>{"Session information:"}</h2>
-        <p>{"id: "}{session.id}</p>
-        <p>{"user id: "} {session.user_id}</p>
-        <p>{"app name: "} {session.app_name}</p>
-        </>
+    if !session.id.is_empty() {
+        html! {
+            <>
+                <h2>{"Session information:"}</h2>
+                <p>{"id: "}{session.id}</p>
+                <p>{"user id: "}{session.user_id}</p>
+                <p>{"app name: "}{session.app_name}</p>
+            </>
+        } 
+    } else {
+            html! {}
     }
 }
 
