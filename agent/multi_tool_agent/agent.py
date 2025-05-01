@@ -4,11 +4,14 @@ from typing import Optional
 from multi_tool_agent.utils import merge_text, save_json_response
 from google.adk.models import LlmResponse
 from google.adk.agents.callback_context import CallbackContext
+from dotenv import load_dotenv
+load_dotenv()
+import os
 
 # import litellm
 # litellm._turn_on_debug()
 
-AGENT = "ollama_chat/gemma3:1b"
+AGENT = f"ollama_chat/{os.getenv('AGENT')}"
 LANGUAGE = "italian"
 # --- Definizione dell'Agente con Temperatura ---
 step1 = Agent(
@@ -68,6 +71,7 @@ step2 = Agent(
 5. MAX 50 words total
 6. Answer should be JUST the sentence
 7. NO "you", NO "OR", NO explanations
+8. The response should be formatted like this: A. .....
 
 Bad examples:
 - "A. You see a key or you follow a path" (no action, uses "you", no action uses "or")
@@ -98,6 +102,8 @@ step3 = Agent(
 5. MAX 50 words total
 6. Answer should be JUST the sentence
 7. NO "you", NO "OR", NO explanations
+8. The response should be formatted like this: B. .....
+
 
 Bad examples:
 - "B. You see a key" (no action, uses "you")

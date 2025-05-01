@@ -14,105 +14,125 @@ pub fn SendRequest(props: &SessionProp) -> Html {
     let session: CreateSessionResponse = props.session.clone();
     let request_text = use_state(|| String::new());
     let request_response = use_state(|| Vec::new());
-    let oninput = Callback::from({
-        let value = request_text.clone();
-        move |input_event: InputEvent| {
-            let target: HtmlInputElement = input_event
-                .target()
-                .unwrap()
-                .dyn_into()
-                .unwrap();
-            //web_sys::console::log_1(&target.value().into()); // <- can console the value.
-            value.set(target.value());
-        }
-    });
-    let onclick = {
+
+    let send_agent_request = {
+        let session = session.clone();
+        let request_response = request_response.clone();
+
+        move |text_to_send: String| {
             let session = session.clone();
-            let request_text = request_text.clone();
             let request_response = request_response.clone();
 
-    
-            move |_| {
-                let request_response = request_response.clone();
+            wasm_bindgen_futures::spawn_local(async move {
                 let body = RunAgentBody {
                     app_name: session.app_name.clone(),
                     user_id: session.user_id.clone(),
                     session_id: session.id.clone(),
                     new_message: NewMessage {
                         role: "user".to_string(),
-                        parts: vec![
-                            Parts::Text {
-                                text: request_text.to_string(),
-                            },
-                        ],
+                        parts: vec![Parts::Text { text: text_to_send }],
                     },
                     streaming: false,
                 };
-    
+
                 let url = "http://127.0.0.1:8000/run";
-                wasm_bindgen_futures::spawn_local(async move {
-                    match Request::post(url)
-                        .json(&body)
-                        .unwrap()
-                        .send()
-                        .await
-                    {
-                        Ok(response) => {
-                            // First check if the response status is OK
-                            if response.ok() {
-                                // Get the response body as text
-                                match response.text().await {
-                                    Ok(body_text) => {
-                                        info!("Response body: {}", body_text);
-                                        
-                                        match serde_json::from_str::<AgentResponses>(&body_text) {
-                                            Ok(responses) => {
-                                                let mut sum_response: Vec<String> = Vec::new();
-                                                info!("Parsed {} agent responses", responses.len());
-                                                for response in responses {
-                                                    for part in response.content.parts {
-                                                        match part {
-                                                            Parts::Text { text } => {
-                                                                info!("{}", text);
-                                                                sum_response.push(text);
-                                                            }
-                                                            _ => {
-                                                                info!("no match");
-                                                            }
-                                                        }                                                  }
+                match Request::post(url)
+                    .json(&body)
+                    .unwrap()
+                    .send()
+                    .await
+                {
+                    Ok(response) => {
+                        if response.ok() {
+                            match response.text().await {
+                                Ok(body_text) => {
+                                    match serde_json::from_str::<AgentResponses>(&body_text) {
+                                        Ok(responses) => {
+                                            let mut sum_response = Vec::new();
+                                            for response in responses {
+                                                for part in response.content.parts {
+                                                    if let Parts::Text { text } = part {
+                                                        sum_response.push(text);
+                                                    }
                                                 }
-                                                request_response.set(sum_response);
-                                            },
-                                            
-                                            Err(e) => error!("Failed to parse JSON: {}", e),
+                                            }
+                                            request_response.set(sum_response);
                                         }
-                                    },
-                                    Err(e) => error!("Failed to read response body: {}", e),
+                                        Err(e) => error!("Failed to parse JSON: {}", e),
+                                    }
                                 }
-                            } else {
-                                error!("Request failed with status: {}", response.status());
+                                Err(e) => error!("Failed to read response body: {}", e),
                             }
-                        }
-                        Err(err) => {
-                            error!("Request error: {:?}", err);
+                        } else {
+                            error!("Request failed with status: {}", response.status());
                         }
                     }
-                }); 
-            }
-        };
+                    Err(err) => {
+                        error!("Request error: {:?}", err);
+                    }
+                }
+            });
+        }
+    };
+
+    let oninput = {
+        let value = request_text.clone();
+        move |input_event: InputEvent| {
+            let target: HtmlInputElement = input_event.target().unwrap().dyn_into().unwrap();
+            value.set(target.value());
+        }
+    };
+
+    let on_agent_click = {
+        let request_text = request_text.clone();
+        let send_agent_request = send_agent_request.clone();
+        move |_| {
+            send_agent_request((*request_text).clone());
+        }
+    };
+
+    let on_choice_click = {
+        let request_response = request_response.clone(); // clone handle, not data
+        let send_agent_request = send_agent_request.clone();
+    
+        move |index: usize| {
+            let request_response = request_response.clone(); // clone again for closure
+            let send_agent_request = send_agent_request.clone();
+    
+            Callback::from(move |_| {
+                if let Some(text) = request_response.get(index) {
+                    send_agent_request(text.clone());
+                }
+            })
+        }
+    };
+    
 
     if session.id.is_empty() {
         html! {}
     } else {
-    html! {
-        <>
-        <input type="text" {oninput}/>
-        <button {onclick}>{"Agent"}</button>
-        <p>{"request text: "}<h5>{&*request_text}</h5></p>
-        <h3>{ if request_response.len() > 0 {"Story:"} else {""}} </h3>
-        { for request_response.iter().map(|item| html! { <p>{item}</p> }) }
-        </>
+        html! {
+            <>
+            <input type="text" {oninput}/>
+            <button onclick={on_agent_click}>{"Agent"}</button>
+            <p>{"request text: "}<h5>{&*request_text}</h5></p>
+            <h3>{ if request_response.len() > 0 { "Story:" } else { "" }} </h3>
+            {
+                if request_response.len() > 0 {
+                    html! {
+                        <>
+                        <p>{&request_response[0]}</p>
+                        <button onclick={on_choice_click(1)}>{"Choice A"}</button>
+                        <p>{&request_response[1]}</p>
+                        <button onclick={on_choice_click(2)}>{"Choice B"}</button>
+                        <p>{&request_response[2]}</p>
+                        </>
+                    }
+                } else {
+                    html! {}
+                }
+            }
+            </>
         }
     }
-
 }
