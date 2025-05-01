@@ -101,6 +101,9 @@ pub fn SendRequest(props: &SessionProp) -> Html {
             }
         };
 
+    if session.id.is_empty() {
+        html! {}
+    } else {
     html! {
         <>
         <input type="text" {oninput}/>
@@ -109,6 +112,7 @@ pub fn SendRequest(props: &SessionProp) -> Html {
         <h3>{ if request_response.len() > 0 {"Story:"} else {""}} </h3>
         { for request_response.iter().map(|item| html! { <p>{item}</p> }) }
         </>
+        }
     }
 
 }

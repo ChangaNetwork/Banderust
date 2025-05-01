@@ -14,7 +14,9 @@ pub struct SessionProp {
 #[function_component]
 pub fn SessionInformation(props: &SessionProp) -> Html {
     let session: CreateSessionResponse = props.session.clone();
-    if !session.id.is_empty() {
+    if session.id.is_empty() {
+        html! {}
+    } else {
         html! {
             <>
                 <h2>{"Session information:"}</h2>
@@ -23,9 +25,7 @@ pub fn SessionInformation(props: &SessionProp) -> Html {
                 <p>{"app name: "}{session.app_name}</p>
             </>
         } 
-    } else {
-            html! {}
-    }
+    } 
 }
 
 #[derive(Clone, PartialEq, Properties)]
