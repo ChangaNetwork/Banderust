@@ -11,7 +11,7 @@ import os
 # import litellm
 # litellm._turn_on_debug()
 
-AGENT = f"ollama_chat/{os.getenv('AGENT')}"
+AGENT = f"{os.getenv('AGENT')}"
 LANGUAGE = "italian"
 # --- Definizione dell'Agente con Temperatura ---
 step1 = Agent(
