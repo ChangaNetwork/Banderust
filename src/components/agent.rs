@@ -52,6 +52,7 @@ pub fn SendRequest(props: &SessionProp) -> Html {
                                             for response in responses {
                                                 for part in response.content.parts {
                                                     if let Parts::Text { text } = part {
+                                                        info!("Response: {}", text);
                                                         sum_response.push(text);
                                                     }
                                                 }
@@ -119,13 +120,22 @@ pub fn SendRequest(props: &SessionProp) -> Html {
             <h3>{ if request_response.len() > 0 { "Story:" } else { "" }} </h3>
             {
                 if request_response.len() > 0 {
+                    let choices: Vec<&str> = request_response[1].split('|').map(&str::trim).collect();
                     html! {
                         <>
                         <p>{&request_response[0]}</p>
-                        <button onclick={on_choice_click(1)}>{"Choice A"}</button>
-                        <p>{&request_response[1]}</p>
-                        <button onclick={on_choice_click(2)}>{"Choice B"}</button>
-                        <p>{&request_response[2]}</p>
+                        { for choices.iter().enumerate().map(|(index, &choice)| {
+                            html! {
+                                <>
+                                <button onclick={on_choice_click(index)}> { format!("Choice {}", index) } </button>
+                                <p>{choice}</p>
+                                </>
+                            }
+                        }) }
+                        //<button onclick={on_choice_click(1)}>{"Choice A"}</button>
+                        //<p>{&request_response[1]}</p>
+                        // <button onclick={on_choice_click(2)}>{"Choice B"}</button>
+                        //<p>{&request_response[2]}</p>
                         </>
                     }
                 } else {

@@ -63,56 +63,25 @@ step2 = Agent(
     instruction=f"""
     /nothink
     output in {LANGUAGE}
-    Generate ONE in-game choice only ONE sentence, you will generate the A choice that:
-1. Is processed from the state key 'story_text'
+    Generate TWO in-game choice only ONE sentence each, you will generate the A and B choice that:
+1. Are processed from the state key 'story_text'
 2. Start with STRONG VERBS (clear actions)
 3. Use 1 CONCRETE OBJECT + 1 EVOCATIVE DETAIL per choice
 4. MIN 10 words total 
 5. MAX 50 words total
-6. Answer should be JUST the sentence
+6. Answer should be JUST a sentence
 7. NO "you", NO "OR", NO explanations
-8. The response should be formatted like this: A. .....
+8. The response should be formatted like this: A. <response> B. <response>
+9. The responses should be separated by this character "|" (pipe)
+10.The choices should be distinct and mutually exclusive (no overlap)
 
 Bad examples:
-- "A. You see a key or you follow a path" (no action, uses "you", no action uses "or")
-- "A. Run (lacks detail)
+- "A. You see a key or you follow a path | B. You see a key" (no action, uses "you", no action uses "or")
+- "A. Run | B. Hide"(lacks detail)
 """,
     tools=[],
-    output_key="choice_a",
+    output_key="choices",
     before_model_callback=merge_text,
 )
-step3 = Agent(
-    model=LiteLlm(
-        model=AGENT,
-        temperature=1.0,
-    ),
-    name="choice_b_agent",
-    description=(
-        "Generate one in game choice starting from state key 'story_text' and 'choice_a' "
-    ),
-    instruction=f"""
-    /nothink
-    output in {LANGUAGE}
-    Generate ONE in-game choice, only ONE sentence, you will generate the B choice that:
-0. Is processed from the state key 'story_text' and is different from state key 'choice_a'
-1. Is distinct and mutually exclusive from state_key 'choice_a'(no overlap)
-2. Start with STRONG VERBS (clear actions)
-3. Use 1 CONCRETE OBJECT + 1 EVOCATIVE DETAIL per choice
-4. MIN 10 words total 
-5. MAX 50 words total
-6. Answer should be JUST the sentence
-7. NO "you", NO "OR", NO explanations
-8. The response should be formatted like this: B. .....
 
-
-Bad examples:
-- "B. You see a key" (no action, uses "you")
-- "B. Hide" (lacks detail)
-""",
-    tools=[],
-    output_key="choice_b",
-    before_model_callback=merge_text,
-    after_agent_callback=save_json_response,
-
-)
-root_agent = SequentialAgent(name="Pipe", sub_agents=[step1, step2, step3])
+root_agent = SequentialAgent(name="Pipe", sub_agents=[step1, step2])
